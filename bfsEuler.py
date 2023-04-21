@@ -6,6 +6,7 @@ class bfsEuler:
     def __init__(self):
         self.HEAD_URL = "https://www.mathgenealogy.org"
         self.first_soup = BeautifulSoup(requests.get(input("Enter a link ")).content, features='lxml')
+        self.IMPORTANT_MATHEMATICIANS = ["Euler", "Newton", "Gauss", "Leibniz"]
 
     def stepsToEuler(self,soup):
         steps = []
@@ -23,8 +24,9 @@ class bfsEuler:
                                 #Add all possible parents to list
                                 links.append(a_link["href"])
                                 #If Euler is a possible parent, add this path's step count to the steps list
-                                if "Euler" in a_link.getText():
-                                    steps.append(thisStep+1)
+                                for name in self.IMPORTANT_MATHEMATICIANS:
+                                    if name in a_link.getText():
+                                        steps.append(thisStep+1)
                 if len(links) > 0:
                     for link in links:
                         #Add all possible links to queue
@@ -39,10 +41,10 @@ class bfsEuler:
         queue = [(soup, [])]
         while len(queue) > 0:
             thisSoup, thisPath = queue.pop(0)
-            if len(thisPath) < 10:
+            if len(thisPath) < 100:
                 links = []
                 addedCurrent = False
-                EulerFound = False
+                EulerFound = None
                 for tag in thisSoup.find_all('p'):
                     tag_text = tag.getText().strip()
                     if "database" in tag_text:
@@ -55,8 +57,9 @@ class bfsEuler:
                         if a_links != None:
                             for a_link in a_links:
                                 links.append(a_link["href"])
-                                if "Euler" in a_link.getText():
-                                    EulerFound = True
+                                for name in self.IMPORTANT_MATHEMATICIANS:
+                                    if name in a_link.getText():
+                                        EulerFound = name
 
                 # IF THERES NO STUDENTS
                 if not addedCurrent:
@@ -65,9 +68,10 @@ class bfsEuler:
                     thisPath.append(tag_text)
                     addedCurrent = True
 
-                if EulerFound:
-                    thisPath.append("Euler")
+                if EulerFound is not None:
+                    thisPath.append(EulerFound)
                     paths.append(thisPath)
+                    print(thisPath)
 
                 if len(links) > 0:
                     for link in links:
@@ -81,6 +85,6 @@ class bfsEuler:
 
 
     def main(self):
-        print(self.stepsToEuler(self.first_soup))
+        #print(self.stepsToEuler(self.first_soup))
         print(' -> '.join(self.pathToEuler(self.first_soup)))
 
